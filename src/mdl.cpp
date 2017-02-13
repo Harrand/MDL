@@ -261,7 +261,8 @@ void MDLF::parse()
 	std::vector<std::string> lines = rf.getLines();
 	auto isComment = [](std::string l) -> bool{return l.c_str()[0] == '#';};
 	auto isTag = [&](std::string s) -> bool{return s.find(": ") != std::string::npos && !isSequence(s);};
-	auto getTag = [&](std::string s) -> std::string{std::string r;std::vector<std::string> sp = splitString(s, ':');if(sp.size() < 2) return "0";
+	//getValue is necessary for tag but not for sequences. This is because the retrieval function for sequences is also used in the deletion functions, so therefore I used a private member function instead of a local lambda.
+	auto getValue = [&](std::string s) -> std::string{std::string r;std::vector<std::string> sp = splitString(s, ':');if(sp.size() < 2) return "0";
 	for(unsigned int i = 1; i < sp.size(); i++)
 	{
 		sp.at(i).erase(0, 1);
@@ -277,7 +278,7 @@ void MDLF::parse()
 		}
 		if(isTag(line))
 		{
-			this->parsedTags[getTagName(line)] = getTag(line);
+			this->parsedTags[getTagName(line)] = getValue(line);
 		}
 		if(isSequence(line))
 		{
