@@ -46,6 +46,14 @@ private:
 	const RawFile rf;
 	std::map<std::string, std::string> parsedTags;
 	std::map<std::string, std::vector<std::string>> parsedSequences;
+	
+	std::vector<std::string> splitString(std::string s, char d) const;
+	std::string getTagName(std::string tag) const;
+	bool hasEnding(std::string s, std::string e) const;
+	bool hasBeginning(std::string s, std::string b) const;
+	bool isSequence(std::string s) const;
+	bool isEndOfSequence(std::string s) const;
+	std::vector<std::string> getSequences(std::vector<std::string> lines, unsigned int index) const;
 	void parse();
 };
 

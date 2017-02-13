@@ -145,20 +145,13 @@ void MDLF::deleteSequence(std::string sequenceName) const
 {
 	if(existsSequence(sequenceName))
 	{
-		auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))	sp.push_back(t);return sp;};
-		auto getTagName = [&splitString](std::string tag) -> std::string{std::string r;std::vector<std::string> sp = splitString(tag, ':');if(sp.size() < 2) return "0";return sp.at(0);};
 		std::vector<std::string> lines = rf.getLines();
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
 			std::string s = rf.getLineByNumber(i);
 			if(getTagName(s) == sequenceName)
 			{
-				auto hasEnding = [](std::string s, std::string e) -> bool{if(s.length() >= e.length()){return (0 == s.compare (s.length() - e.length(), e.length(), e));}else{return false;};};
-				auto hasBeginning = [](std::string s, std::string b) -> bool{return s.compare(0, b.length(), b) == 0;};
-				auto isSequence = [&hasEnding](std::string s) -> bool{return s.find(": ") != std::string::npos && hasEnding(s, "%[");};
-				auto isEndOfSequence = [&hasEnding](std::string s) -> bool{return hasEnding(s, "]%");};
-				auto getSequence = [&hasBeginning, &isSequence, &isEndOfSequence](std::vector<std::string> lines, unsigned int index) -> std::vector<std::string>{bool end = false;std::vector<std::string> r;if(!isSequence(lines.at(index)))return r;while(++index < lines.size() && end == false){std::string cur = lines.at(index);if(hasBeginning(cur, "- ")){cur.erase(0, 2);if(isEndOfSequence(cur)){cur.erase(cur.length() - 2, 2);end = true;}r.push_back(cur);}}return r;};
-				unsigned int sequenceSize = getSequence(lines, i).size();
+				unsigned int sequenceSize = getSequences(lines, i).size();
 				for(unsigned int j = 0; j <= sequenceSize; j++)
 				{
 					rf.writeLine("", i + j);
@@ -194,25 +187,87 @@ std::map<std::string, std::vector<std::string>> MDLF::getParsedSequences() const
 	return this->parsedSequences;
 }
 
+std::vector<std::string> MDLF::splitString(std::string s, char d) const
+{
+	std::istringstream ss(s);
+	std::string t;
+	std::vector<std::string> sp;
+	while(std::getline(ss, t, d))
+		sp.push_back(t);
+	return sp;
+}
+
+std::string MDLF::getTagName(std::string tag) const
+{
+	std::string r;
+	std::vector<std::string> sp = splitString(tag, ':');
+	if(sp.size() < 2) 
+		return "0";
+	return sp.at(0);
+}
+
+bool MDLF::hasEnding(std::string s, std::string e) const
+{
+	if(s.length() >= e.length())
+	{
+		return (0 == s.compare (s.length() - e.length(), e.length(), e));
+	}
+	else
+	{
+		return false;
+	};
+}
+
+bool MDLF::hasBeginning(std::string s, std::string b) const
+{
+	return s.compare(0, b.length(), b) == 0;
+}
+
+bool MDLF::isSequence(std::string s) const
+{
+	return s.find(": ") != std::string::npos && hasEnding(s, "%[");
+}
+
+bool MDLF::isEndOfSequence(std::string s) const
+{
+	return hasEnding(s, "]%");
+}
+
+std::vector<std::string> MDLF::getSequences(std::vector<std::string> lines, unsigned int index) const
+{
+	bool end = false;
+	std::vector<std::string> r;
+	if(!isSequence(lines.at(index)))
+		return r;
+	while(++index < lines.size() && end == false)
+	{
+		std::string cur = lines.at(index);
+		if(hasBeginning(cur, "- "))
+		{
+			cur.erase(0, 2);
+			if(isEndOfSequence(cur))
+			{
+				cur.erase(cur.length() - 2, 2);
+				end = true;
+			}
+			r.push_back(cur);
+		}
+	}
+	return r;
+}
+
 void MDLF::parse()
 {
 	std::vector<std::string> lines = rf.getLines();
 	auto isComment = [](std::string l) -> bool{return l.c_str()[0] == '#';};
-	auto hasEnding = [](std::string s, std::string e) -> bool{if(s.length() >= e.length()){return (0 == s.compare (s.length() - e.length(), e.length(), e));}else{return false;};};
-	auto hasBeginning = [](std::string s, std::string b) -> bool{return s.compare(0, b.length(), b) == 0;};
-	auto isSequence = [&hasEnding](std::string s) -> bool{return s.find(": ") != std::string::npos && hasEnding(s, "%[");};
-	auto isEndOfSequence = [&hasEnding](std::string s) -> bool{return hasEnding(s, "]%");};
-	auto getSequence = [&hasBeginning, &isSequence, &isEndOfSequence](std::vector<std::string> lines, unsigned int index) -> std::vector<std::string>{bool end = false;std::vector<std::string> r;if(!isSequence(lines.at(index)))return r;while(++index < lines.size() && end == false){std::string cur = lines.at(index);if(hasBeginning(cur, "- ")){cur.erase(0, 2);if(isEndOfSequence(cur)){cur.erase(cur.length() - 2, 2);end = true;}r.push_back(cur);}}return r;};
-	auto isTag = [&isSequence](std::string s) -> bool{return s.find(": ") != std::string::npos && !isSequence(s);};
-	auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))	sp.push_back(t);return sp;};
-	auto getTag = [&splitString](std::string s) -> std::string{std::string r;std::vector<std::string> sp = splitString(s, ':');if(sp.size() < 2) return "0";
+	auto isTag = [&](std::string s) -> bool{return s.find(": ") != std::string::npos && !isSequence(s);};
+	auto getTag = [&](std::string s) -> std::string{std::string r;std::vector<std::string> sp = splitString(s, ':');if(sp.size() < 2) return "0";
 	for(unsigned int i = 1; i < sp.size(); i++)
 	{
 		sp.at(i).erase(0, 1);
 		r += sp.at(i);
 	}
 	return r;};
-	auto getTagName = [&splitString](std::string tag) -> std::string{std::string r;std::vector<std::string> sp = splitString(tag, ':');if(sp.size() < 2) return "0";return sp.at(0);};
 	for(unsigned int i = 0; i < lines.size(); i++)
 	{
 		std::string line = lines.at(i);
@@ -226,7 +281,7 @@ void MDLF::parse()
 		}
 		if(isSequence(line))
 		{
-			this->parsedSequences[getTagName(line)] = getSequence(lines, i);
+			this->parsedSequences[getTagName(line)] = getSequences(lines, i);
 		}
 	}
 }
