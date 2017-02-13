@@ -1,5 +1,5 @@
 MDL -- Minimalist Data Language
-Written by Harry "Harrand" Hollands 2017. Free to be used and distributed by any individual.
+Written by Harry "Harrand" Hollands 2017.
 Designed for use with C++11 to manipulate and read data in a simple and efficient manner.
 
 Features (2):
