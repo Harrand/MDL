@@ -1,0 +1,8 @@
+use qcpl.bat to compile MDL into a DLL and an import library.
+
+to use MDL, it's actually fucking easy as shit:
+include mdl.hpp and use whatever you want from it.
+then during compilation compile to a .o like normal (e.g you compiled test.cpp to test.o)
+then use a command like this:
+g++ -o test.exe test.o -L. -lmdl
+so simply pass mdl dll directly. the implib is there too if not using g++
