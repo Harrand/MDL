@@ -8,5 +8,5 @@ cd cpl
 set cpldir=%cd%
 cd %scriptdir%
 g++ -c -std=c++11 test.cpp -I %srcdir%
-g++ -o test.exe test.o -L%cpldir% -lmdl
+g++ -o test.exe test.o -L. -lmdl
 pause
