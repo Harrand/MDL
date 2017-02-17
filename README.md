@@ -20,7 +20,7 @@ sequencename: %[
 - sequencedata_2
 	...
 - sequencedata_n
-%]
+]%
 
 This pseudolanguage is almost identical to YAML, although even simpler (For example, MDL lacks the indentation structure that YAML possesses).
 Due to this, MDL is recommended only for simple data-handling. Although if you wish to describe an object with multiple attributes in MDL, I recommend the following strategy (Shown via an example below):
@@ -38,6 +38,6 @@ human1: %[
 - name
 - height
 - age
-%]
+]%
 
 Although this functionality is optional.
