@@ -58,6 +58,8 @@ void RawFile::write(std::string data, bool clear) const
 	outdata.push_back(data);
 	for(unsigned int j = 0; j < outdata.size(); j++)
 	{
+		if(outdata.at(j) == "")
+			continue;
 		std::string lo = outdata.at(j);
 		lo += "\n";
 		const char* locstr = lo.c_str();
