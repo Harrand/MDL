@@ -44,7 +44,6 @@ void RawFile::clear() const
 
 void RawFile::write(std::string data, bool clear) const
 {
-	std::vector<std::string> lines = this->getLines();
 	std::ofstream out;
 	if(clear)
 		out.open((this->path).c_str(), std::ofstream::out | std::ofstream::trunc);
@@ -58,7 +57,7 @@ void RawFile::write(std::string data, bool clear) const
 void RawFile::writeLine(std::string data, unsigned int line) const
 {
 	std::vector<std::string> lines = this->getLines();
-	if(line > lines.size())
+	if(line >= lines.size())
 	{
 		this->write(data, false);
 		return;
@@ -120,13 +119,6 @@ void MDLF::addSequence(std::string sequenceName, std::vector<std::string> data) 
 	}
 }
 
-void MDLF::editTag(std::string tagName, std::string newValue) const
-{
-	auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))	sp.push_back(t);return sp;};
-	auto getTagName = [&splitString](std::string tag) -> std::string{std::string r;std::vector<std::string> sp = splitString(tag, ':');if(sp.size() < 2) return "0";return sp.at(0);};
-	
-}
-
 void MDLF::deleteTag(std::string tagName) const
 {
 	if(existsTag(tagName))
@@ -138,7 +130,10 @@ void MDLF::deleteTag(std::string tagName) const
 		{
 			std::string s = rf.getLineByNumber(i);
 			if(getTagName(s) == tagName)
+			{
 				rf.writeLine("", i);
+				i++;
+			}
 		}
 	}
 }
