@@ -37,6 +37,7 @@ public:
 	bool existsSequence(std::string sequenceName) const;
 	void addTag(std::string tagName, std::string data) const;
 	void addSequence(std::string sequenceName, std::vector<std::string> data) const;
+	void editTag(std::string tagName, std::string newValue) const;
 	void deleteTag(std::string tagName) const;
 	void deleteSequence(std::string sequenceName) const;
 	std::string getTag(std::string tagName) const;

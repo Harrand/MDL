@@ -46,31 +46,23 @@ void RawFile::write(std::string data, bool clear) const
 {
 	std::vector<std::string> lines = this->getLines();
 	std::ofstream out;
-	out.open((this->path).c_str(), std::ofstream::out | std::ofstream::trunc);
-	std::vector<std::string> outdata;
-	if(!clear)
-	{
-		for(unsigned int i = 0; i < lines.size(); i++)
-		{
-			outdata.push_back(lines.at(i));
-		}
-	}
-	outdata.push_back(data);
-	for(unsigned int j = 0; j < outdata.size(); j++)
-	{
-		if(outdata.at(j) == "")
-			continue;
-		std::string lo = outdata.at(j);
-		lo += "\n";
-		const char* locstr = lo.c_str();
-		out << locstr;
-	}
+	if(clear)
+		out.open((this->path).c_str(), std::ofstream::out | std::ofstream::trunc);
+	else
+		out.open((this->path).c_str(), std::ofstream::out | std::ofstream::app);
+	if(data != "")
+		out << (data + "\n").c_str();
 	out.close();
 }
 
 void RawFile::writeLine(std::string data, unsigned int line) const
 {
 	std::vector<std::string> lines = this->getLines();
+	if(line > lines.size())
+	{
+		this->write(data, false);
+		return;
+	}
 	lines.at(line) = data;
 	this->clear();
 	for(unsigned int i = 0; i < lines.size(); i++)
@@ -126,6 +118,13 @@ void MDLF::addSequence(std::string sequenceName, std::vector<std::string> data) 
 		std::string suffix = (i == data.size() - 1) ? "]%" : "";
 		rf.write("- " + data.at(i) + suffix, false);
 	}
+}
+
+void MDLF::editTag(std::string tagName, std::string newValue) const
+{
+	auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))	sp.push_back(t);return sp;};
+	auto getTagName = [&splitString](std::string tag) -> std::string{std::string r;std::vector<std::string> sp = splitString(tag, ':');if(sp.size() < 2) return "0";return sp.at(0);};
+	
 }
 
 void MDLF::deleteTag(std::string tagName) const
