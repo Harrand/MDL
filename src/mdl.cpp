@@ -158,6 +158,18 @@ void MDLF::deleteSequence(std::string sequenceName) const
 	}
 }
 
+void MDLF::editTag(std::string tagName, std::string data) const
+{
+	this->deleteTag(tagName);
+	this->addTag(tagName, data);
+}
+
+void MDLF::editSequence(std::string sequenceName, std::vector<std::string> data) const
+{
+	this->deleteSequence(sequenceName);
+	this->addSequence(sequenceName, data);
+}
+
 std::string MDLF::getTag(std::string tagName) const
 {
 	for(auto &iter : getParsedTags())
