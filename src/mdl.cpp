@@ -1,8 +1,8 @@
 #include "mdl.hpp"
 
-RawFile::RawFile(const std::string path): path(path){}
+RawFile::RawFile(std::string path): path(path){}
 
-const std::string RawFile::getPath() const
+std::string RawFile::getPath() const
 {
 	return this->path;
 }
@@ -19,27 +19,17 @@ std::vector<std::string> RawFile::getLines() const
 	return lines;
 }
 
-std::string RawFile::getLineByNumber(unsigned int index) const
-{
-	return this->getLines().at(index);
-}
-
 std::string RawFile::getData() const
 {
-	std::ifstream in((this->path).c_str());
-	std::string str, res;
-	while(std::getline(in, str))
-	{
-		res += str;
-	}
-	return res;
+	std::stringstream sstr;
+    sstr << std::ifstream(path.c_str()).rdbuf();
+    return sstr.str();
 }
 
 void RawFile::clear() const
 {
 	std::ofstream out;
 	out.open((this->path).c_str(), std::ofstream::out | std::ofstream::trunc);
-	out.close();
 }
 
 void RawFile::write(std::string data, bool clear) const
@@ -112,11 +102,14 @@ void MDLF::addTag(std::string tagName, std::string data) const
 void MDLF::addSequence(std::string sequenceName, std::vector<std::string> data) const
 {
 	rf.write(sequenceName + ": %[", false);
-	for(unsigned int i = 0; i < data.size(); i++)
-	{
-		std::string suffix = (i == data.size() - 1) ? "]%" : "";
-		rf.write("- " + data.at(i) + suffix, false);
-	}
+	if(data.size() > 0)
+		for(unsigned int i = 0; i < data.size(); i++)
+		{
+			std::string suffix = (i == data.size() - 1) ? "]%" : "";
+			rf.write("- " + data.at(i) + suffix, false);
+		}
+	else
+		rf.write("]%", false);
 }
 
 void MDLF::deleteTag(std::string tagName) const
@@ -128,7 +121,7 @@ void MDLF::deleteTag(std::string tagName) const
 		std::vector<std::string> lines = rf.getLines();
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
-			std::string s = rf.getLineByNumber(i);
+			std::string s = lines.at(i);
 			if(getTagName(s) == tagName)
 			{
 				rf.writeLine("", i);
@@ -145,7 +138,7 @@ void MDLF::deleteSequence(std::string sequenceName) const
 		std::vector<std::string> lines = rf.getLines();
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
-			std::string s = rf.getLineByNumber(i);
+			std::string s = lines.at(i);
 			if(getTagName(s) == sequenceName)
 			{
 				unsigned int sequenceSize = getSequences(lines, i).size();
