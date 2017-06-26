@@ -71,7 +71,7 @@ const RawFile MDLF::getRawFile() const
 	return this->rf;
 }
 
-void MDLF::update()
+void MDLF::update() const
 {
 	this->parsedTags.clear();
 	this->parsedSequences.clear();
@@ -258,7 +258,7 @@ std::vector<std::string> MDLF::getSequences(std::vector<std::string> lines, unsi
 	return r;
 }
 
-void MDLF::parse()
+void MDLF::parse() const
 {
 	std::vector<std::string> lines = rf.getLines();
 	auto isComment = [](std::string l) -> bool{return l.c_str()[0] == '#';};
