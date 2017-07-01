@@ -7,6 +7,6 @@ cd..
 cd cpl
 set cpldir=%cd%
 cd %scriptdir%
-g++ -c -std=c++11 test.cpp -I %srcdir%
+g++ -c -std=c++14 -Wall -pedantic-errors -O3 test.cpp -I %srcdir%
 g++ -o test.exe test.o -L. -lmdl
 pause

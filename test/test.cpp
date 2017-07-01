@@ -11,6 +11,8 @@ std::string inputCommand(std::string cmd, MDLF& mdlf)
 	std::string cmdName = splitCmd.at(0);
 	if(cmdName == "stop" || cmdName == "exit")
 		return TEST_STOP;
+	else if(cmdName == "path")
+		return mdlf.getRawFile().getPath() + "\n";
 	else if(cmdName == "addTag")
 	{
 		if(splitCmd.size() < 3)

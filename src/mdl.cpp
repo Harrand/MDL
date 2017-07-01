@@ -2,7 +2,7 @@
 
 RawFile::RawFile(std::string path): path(path){}
 
-std::string RawFile::getPath() const
+const std::string& RawFile::getPath() const
 {
 	return this->path;
 }
@@ -61,12 +61,12 @@ void RawFile::writeLine(std::string data, unsigned int line) const
 	}
 }
 
-MDLF::MDLF(const RawFile rf): rf(rf)
+MDLF::MDLF(RawFile rf): rf(rf)
 {
 	parse();
 }
 
-const RawFile MDLF::getRawFile() const
+const RawFile& MDLF::getRawFile() const
 {
 	return this->rf;
 }
