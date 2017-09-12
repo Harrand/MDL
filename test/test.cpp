@@ -4,7 +4,7 @@
 #define TEST_STOP "stop"
 #define TEST_INVALID "invalid"
 
-std::string inputCommand(std::string cmd, MDLF& mdlf)
+std::string inputCommand(std::string cmd, const MDLF& mdlf)
 {
 	auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))sp.push_back(t);return sp;};
 	std::vector<std::string> splitCmd = splitString(cmd, ' ');
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 			filename.append(argv[i]);
 		std::cout << "Using '" << filename << "'.\n";
 	}
-	MDLF input = MDLF(RawFile(filename));
+	const MDLF input = MDLF(RawFile(filename));
 	std::string cmd, status;
 	while(status != TEST_STOP)
 	{

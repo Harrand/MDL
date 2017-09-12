@@ -73,35 +73,35 @@ const RawFile& MDLF::getRawFile() const
 
 void MDLF::update() const
 {
-	this->parsedTags.clear();
-	this->parsedSequences.clear();
+	this->parsed_tags.clear();
+	this->parsed_sequences.clear();
 	parse();
 }
 
-bool MDLF::existsTag(std::string tagName) const
+bool MDLF::existsTag(std::string tag_name) const
 {
 	for(auto &iter : getParsedTags())
-		if(iter.first == tagName)
+		if(iter.first == tag_name)
 			return true;
 	return false;
 }
 
-bool MDLF::existsSequence(std::string sequenceName) const
+bool MDLF::existsSequence(std::string sequence_name) const
 {
 	for(auto &iter : getParsedSequences())
-		if(iter.first == sequenceName)
+		if(iter.first == sequence_name)
 			return true;
 	return false;
 }
 
-void MDLF::addTag(std::string tagName, std::string data) const
+void MDLF::addTag(std::string tag_name, std::string data) const
 {
-	rf.write(tagName + ": " + data, false);
+	rf.write(tag_name + ": " + data, false);
 }
 
-void MDLF::addSequence(std::string sequenceName, std::vector<std::string> data) const
+void MDLF::addSequence(std::string sequence_name, std::vector<std::string> data) const
 {
-	rf.write(sequenceName + ": %[", false);
+	rf.write(sequence_name + ": %[", false);
 	if(data.size() > 0)
 		for(unsigned int i = 0; i < data.size(); i++)
 		{
@@ -112,9 +112,9 @@ void MDLF::addSequence(std::string sequenceName, std::vector<std::string> data) 
 		rf.write("]%", false);
 }
 
-void MDLF::deleteTag(std::string tagName) const
+void MDLF::deleteTag(std::string tag_name) const
 {
-	if(existsTag(tagName))
+	if(existsTag(tag_name))
 	{
 		auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))	sp.push_back(t);return sp;};
 		auto getTagName = [&splitString](std::string tag) -> std::string{std::string r;std::vector<std::string> sp = splitString(tag, ':');if(sp.size() < 2) return "0";return sp.at(0);};
@@ -122,7 +122,7 @@ void MDLF::deleteTag(std::string tagName) const
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
-			if(getTagName(s) == tagName)
+			if(getTagName(s) == tag_name)
 			{
 				rf.writeLine("", i);
 				i++;
@@ -131,15 +131,15 @@ void MDLF::deleteTag(std::string tagName) const
 	}
 }
 
-void MDLF::deleteSequence(std::string sequenceName) const
+void MDLF::deleteSequence(std::string sequence_name) const
 {
-	if(existsSequence(sequenceName))
+	if(existsSequence(sequence_name))
 	{
 		std::vector<std::string> lines = rf.getLines();
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
-			if(getTagName(s) == sequenceName)
+			if(getTagName(s) == sequence_name)
 			{
 				unsigned int sequenceSize = getSequences(lines, i).size();
 				for(unsigned int j = 0; j <= sequenceSize; j++)
@@ -151,42 +151,42 @@ void MDLF::deleteSequence(std::string sequenceName) const
 	}
 }
 
-void MDLF::editTag(std::string tagName, std::string data) const
+void MDLF::editTag(std::string tag_name, std::string data) const
 {
-	this->deleteTag(tagName);
-	this->addTag(tagName, data);
+	this->deleteTag(tag_name);
+	this->addTag(tag_name, data);
 }
 
-void MDLF::editSequence(std::string sequenceName, std::vector<std::string> data) const
+void MDLF::editSequence(std::string sequence_name, std::vector<std::string> data) const
 {
-	this->deleteSequence(sequenceName);
-	this->addSequence(sequenceName, data);
+	this->deleteSequence(sequence_name);
+	this->addSequence(sequence_name, data);
 }
 
-std::string MDLF::getTag(std::string tagName) const
+std::string MDLF::getTag(std::string tag_name) const
 {
 	for(auto &iter : getParsedTags())
-		if(iter.first == tagName)
+		if(iter.first == tag_name)
 			return iter.second;
 	return "0";
 }
 
-std::vector<std::string> MDLF::getSequence(std::string sequenceName) const
+std::vector<std::string> MDLF::getSequence(std::string sequence_name) const
 {
 	for(auto &iter : getParsedSequences())
-		if(iter.first == sequenceName)
+		if(iter.first == sequence_name)
 			return iter.second;
 	return std::vector<std::string>();
 }
 
-std::map<std::string, std::string> MDLF::getParsedTags() const
+const std::map<std::string, std::string>& MDLF::getParsedTags() const
 {
-	return this->parsedTags;
+	return this->parsed_tags;
 }
 
-std::map<std::string, std::vector<std::string>> MDLF::getParsedSequences() const
+const std::map<std::string, std::vector<std::string>>& MDLF::getParsedSequences() const
 {
-	return this->parsedSequences;
+	return this->parsed_sequences;
 }
 
 std::vector<std::string> MDLF::splitString(std::string s, char d) const
@@ -274,11 +274,11 @@ void MDLF::parse() const
 		}
 		if(isTag(line))
 		{
-			this->parsedTags[getTagName(line)] = getValue(line);
+			this->parsed_tags[getTagName(line)] = getValue(line);
 		}
 		if(isSequence(line))
 		{
-			this->parsedSequences[getTagName(line)] = getSequences(lines, i);
+			this->parsed_sequences[getTagName(line)] = getSequences(lines, i);
 		}
 	}
 }
