@@ -1,6 +1,6 @@
 #include "mdl.hpp"
 
-RawFile::RawFile(std::string path): path(path){}
+RawFile::RawFile(std::string path): path(std::move(path)){}
 
 const std::string& RawFile::getPath() const
 {
@@ -78,7 +78,7 @@ void MDLF::update() const
 	parse();
 }
 
-bool MDLF::existsTag(std::string tag_name) const
+bool MDLF::existsTag(const std::string& tag_name) const
 {
 	for(auto &iter : getParsedTags())
 		if(iter.first == tag_name)
@@ -86,7 +86,7 @@ bool MDLF::existsTag(std::string tag_name) const
 	return false;
 }
 
-bool MDLF::existsSequence(std::string sequence_name) const
+bool MDLF::existsSequence(const std::string& sequence_name) const
 {
 	for(auto &iter : getParsedSequences())
 		if(iter.first == sequence_name)
@@ -163,7 +163,7 @@ void MDLF::editSequence(std::string sequence_name, std::vector<std::string> data
 	this->addSequence(sequence_name, data);
 }
 
-std::string MDLF::getTag(std::string tag_name) const
+std::string MDLF::getTag(const std::string& tag_name) const
 {
 	for(auto &iter : getParsedTags())
 		if(iter.first == tag_name)
@@ -171,7 +171,7 @@ std::string MDLF::getTag(std::string tag_name) const
 	return "0";
 }
 
-std::vector<std::string> MDLF::getSequence(std::string sequence_name) const
+std::vector<std::string> MDLF::getSequence(const std::string& sequence_name) const
 {
 	for(auto &iter : getParsedSequences())
 		if(iter.first == sequence_name)
@@ -208,7 +208,7 @@ std::string MDLF::getTagName(std::string tag) const
 	return sp.at(0);
 }
 
-bool MDLF::hasEnding(std::string s, std::string e) const
+bool MDLF::hasEnding(const std::string& s, const std::string& e) const
 {
 	if(s.length() >= e.length())
 	{
@@ -220,17 +220,17 @@ bool MDLF::hasEnding(std::string s, std::string e) const
 	};
 }
 
-bool MDLF::hasBeginning(std::string s, std::string b) const
+bool MDLF::hasBeginning(const std::string& s, const std::string& b) const
 {
 	return s.compare(0, b.length(), b) == 0;
 }
 
-bool MDLF::isSequence(std::string s) const
+bool MDLF::isSequence(const std::string& s) const
 {
 	return s.find(": ") != std::string::npos && hasEnding(s, "%[");
 }
 
-bool MDLF::isEndOfSequence(std::string s) const
+bool MDLF::isEndOfSequence(const std::string& s) const
 {
 	return hasEnding(s, "]%");
 }
