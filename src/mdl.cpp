@@ -46,7 +46,7 @@ void RawFile::write(std::string data, bool clear) const
 	out.close();
 }
 
-void RawFile::writeLine(std::string data, unsigned int line) const
+void RawFile::writeLine(std::string data, std::size_t line) const
 {
 	std::vector<std::string> lines = this->getLines();
 	if(line >= lines.size())
@@ -56,23 +56,20 @@ void RawFile::writeLine(std::string data, unsigned int line) const
 	}
 	lines.at(line) = data;
 	this->clear();
-	for(unsigned int i = 0; i < lines.size(); i++)
-	{
-		std::string l = lines.at(i);
-		this->write(l, false);
-	}
+	for(std::size_t i = 0; i < lines.size(); i++)
+		this->write(lines.at(i), false);
 }
 
 MDLF::MDLF(std::string file_path): MDLF(RawFile(file_path)){}
 
-MDLF::MDLF(RawFile rf): rf(rf)
+MDLF::MDLF(RawFile raw_file): raw_file(raw_file)
 {
 	this->update();
 }
 
 const RawFile& MDLF::getRawFile() const
 {
-	return this->rf;
+	return this->raw_file;
 }
 
 bool MDLF::existsTag(const std::string& tag_name) const
@@ -93,36 +90,39 @@ bool MDLF::existsSequence(const std::string& sequence_name) const
 
 void MDLF::addTag(std::string tag_name, std::string data) const
 {
-	rf.write(tag_name + ": " + data, false);
+	raw_file.write(tag_name + ": " + data, false);
+	this->parsed_tags[tag_name] = data;
 }
 
 void MDLF::addSequence(std::string sequence_name, std::vector<std::string> data) const
 {
-	rf.write(sequence_name + ": %[", false);
+	raw_file.write(sequence_name + ": %[", false);
 	if(data.size() > 0)
 		for(std::size_t i = 0; i < data.size(); i++)
 		{
 			std::string suffix = (i == data.size() - 1) ? "]%" : "";
-			rf.write("- " + data.at(i) + suffix, false);
+			raw_file.write("- " + data.at(i) + suffix, false);
 		}
 	else
-		rf.write("]%", false);
+		raw_file.write("]%", false);
+	this->parsed_sequences[sequence_name] = data;
 }
 
 void MDLF::deleteTag(std::string tag_name) const
 {
 	if(existsTag(tag_name))
 	{
-		std::vector<std::string> lines = rf.getLines();
+		std::vector<std::string> lines = raw_file.getLines();
 		for(std::size_t i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
 			if(mdl::util::getTagName(s) == tag_name)
 			{
-				rf.writeLine("", i);
+				raw_file.writeLine("", i);
 				i++;
 			}
 		}
+		this->parsed_tags.erase(tag_name);
 	}
 }
 
@@ -130,7 +130,7 @@ void MDLF::deleteSequence(std::string sequence_name) const
 {
 	if(existsSequence(sequence_name))
 	{
-		std::vector<std::string> lines = rf.getLines();
+		std::vector<std::string> lines = raw_file.getLines();
 		for(std::size_t i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
@@ -139,10 +139,11 @@ void MDLF::deleteSequence(std::string sequence_name) const
 				std::size_t sequence_size = mdl::util::findSequence(lines, i).size();
 				for(std::size_t j = 0; j <= sequence_size; j++)
 				{
-					rf.writeLine("", i + j);
+					raw_file.writeLine("", i + j);
 				}
 			}
 		}
+		this->parsed_tags.erase(sequence_name);
 	}
 }
 
@@ -163,7 +164,7 @@ std::string MDLF::getTag(const std::string& tag_name) const
 	for(auto iter : getParsedTags())
 		if(iter.first == tag_name)
 			return iter.second;
-	return "0";
+	return mdl::default_string;
 }
 
 std::vector<std::string> MDLF::getSequence(const std::string& sequence_name) const
@@ -188,7 +189,7 @@ void MDLF::update() const
 {
 	this->parsed_tags.clear();
 	this->parsed_sequences.clear();
-	std::vector<std::string> lines = rf.getLines();
+	std::vector<std::string> lines = raw_file.getLines();
 	for(std::size_t i = 0; i < lines.size(); i++)
 	{
 		std::string line = lines.at(i);
@@ -255,7 +256,7 @@ namespace mdl
 			std::vector<std::string> sp = mdl::util::splitString(tag, ":");
 			constexpr std::size_t minimum_split_quantity = 2;
 			if(sp.size() < minimum_split_quantity) 
-				return "0";
+				return mdl::default_string;
 			return sp.at(0);
 		}
 		
@@ -278,7 +279,7 @@ namespace mdl
 			std::vector<std::string> sp = mdl::util::splitString(line, ":");
 			constexpr std::size_t minimum_split_quantity = 2;
 			if(sp.size() < minimum_split_quantity)
-				return "0";
+				return mdl::default_string;
 			for(std::size_t i = 1; i < sp.size(); i++)
 			{
 				sp.at(i).erase(0, 1);

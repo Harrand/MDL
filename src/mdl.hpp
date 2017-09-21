@@ -1,6 +1,5 @@
 #ifndef MDL_HPP
 #define MDL_HPP
-
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -12,6 +11,7 @@ public:
 	RawFile(std::string path);
 	RawFile(const RawFile& copy) = default;
 	RawFile(RawFile&& move) = default;
+	~RawFile() = default;
 	RawFile& operator=(const RawFile& rhs) = default;
 	
 	const std::string& getPath() const;
@@ -19,7 +19,7 @@ public:
 	std::string getData() const;
 	void clear() const;
 	void write(std::string data, bool clear) const;
-	void writeLine(std::string data, unsigned int line) const;
+	void writeLine(std::string data, std::size_t line) const;
 private:
 	std::string path;
 };
@@ -28,9 +28,10 @@ class MDLF
 {
 public:
 	MDLF(std::string file_path);
-	MDLF(RawFile rf);
+	MDLF(RawFile raw_file);
 	MDLF(const MDLF& copy) = default;
 	MDLF(MDLF&& move) = default;
+	~MDLF() = default;
 	MDLF& operator=(const MDLF& rhs) = default;
 	
 	const RawFile& getRawFile() const;
@@ -48,13 +49,14 @@ public:
 	const std::map<std::string, std::vector<std::string>>& getParsedSequences() const;
 	void update() const;
 private:
-	RawFile rf;
+	RawFile raw_file;
 	mutable std::map<std::string, std::string> parsed_tags;
 	mutable std::map<std::string, std::vector<std::string>> parsed_sequences;	
 };
 
 namespace mdl
 {
+	constexpr char default_string[] = "0";
 	namespace syntax
 	{
 		bool isComment(const std::string& line);
