@@ -1,4 +1,6 @@
 #include "mdl.hpp"
+#include <fstream>
+#include <sstream>
 
 RawFile::RawFile(std::string path): path(std::move(path)){}
 
@@ -61,6 +63,8 @@ void RawFile::writeLine(std::string data, unsigned int line) const
 	}
 }
 
+MDLF::MDLF(std::string file_path): MDLF(RawFile(file_path)){}
+
 MDLF::MDLF(RawFile rf): rf(rf)
 {
 	this->update();
@@ -73,7 +77,7 @@ const RawFile& MDLF::getRawFile() const
 
 bool MDLF::existsTag(const std::string& tag_name) const
 {
-	for(auto &iter : getParsedTags())
+	for(auto iter : getParsedTags())
 		if(iter.first == tag_name)
 			return true;
 	return false;
@@ -81,7 +85,7 @@ bool MDLF::existsTag(const std::string& tag_name) const
 
 bool MDLF::existsSequence(const std::string& sequence_name) const
 {
-	for(auto &iter : getParsedSequences())
+	for(auto iter : getParsedSequences())
 		if(iter.first == sequence_name)
 			return true;
 	return false;
@@ -96,7 +100,7 @@ void MDLF::addSequence(std::string sequence_name, std::vector<std::string> data)
 {
 	rf.write(sequence_name + ": %[", false);
 	if(data.size() > 0)
-		for(unsigned int i = 0; i < data.size(); i++)
+		for(std::size_t i = 0; i < data.size(); i++)
 		{
 			std::string suffix = (i == data.size() - 1) ? "]%" : "";
 			rf.write("- " + data.at(i) + suffix, false);
@@ -110,7 +114,7 @@ void MDLF::deleteTag(std::string tag_name) const
 	if(existsTag(tag_name))
 	{
 		std::vector<std::string> lines = rf.getLines();
-		for(unsigned int i = 0; i < lines.size(); i++)
+		for(std::size_t i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
 			if(mdl::util::getTagName(s) == tag_name)
@@ -127,13 +131,13 @@ void MDLF::deleteSequence(std::string sequence_name) const
 	if(existsSequence(sequence_name))
 	{
 		std::vector<std::string> lines = rf.getLines();
-		for(unsigned int i = 0; i < lines.size(); i++)
+		for(std::size_t i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
 			if(mdl::util::getTagName(s) == sequence_name)
 			{
-				unsigned int sequenceSize = mdl::util::findSequence(lines, i).size();
-				for(unsigned int j = 0; j <= sequenceSize; j++)
+				std::size_t sequence_size = mdl::util::findSequence(lines, i).size();
+				for(std::size_t j = 0; j <= sequence_size; j++)
 				{
 					rf.writeLine("", i + j);
 				}
@@ -156,7 +160,7 @@ void MDLF::editSequence(std::string sequence_name, std::vector<std::string> data
 
 std::string MDLF::getTag(const std::string& tag_name) const
 {
-	for(auto &iter : getParsedTags())
+	for(auto iter : getParsedTags())
 		if(iter.first == tag_name)
 			return iter.second;
 	return "0";
@@ -164,7 +168,7 @@ std::string MDLF::getTag(const std::string& tag_name) const
 
 std::vector<std::string> MDLF::getSequence(const std::string& sequence_name) const
 {
-	for(auto &iter : getParsedSequences())
+	for(auto iter : getParsedSequences())
 		if(iter.first == sequence_name)
 			return iter.second;
 	return std::vector<std::string>();
@@ -185,21 +189,15 @@ void MDLF::update() const
 	this->parsed_tags.clear();
 	this->parsed_sequences.clear();
 	std::vector<std::string> lines = rf.getLines();
-	for(unsigned int i = 0; i < lines.size(); i++)
+	for(std::size_t i = 0; i < lines.size(); i++)
 	{
 		std::string line = lines.at(i);
 		if(mdl::syntax::isComment(line))
-		{
 			continue;
-		}
 		if(mdl::syntax::isTag(line))
-		{
 			this->parsed_tags[mdl::util::getTagName(line)] = mdl::util::findTagValue(line);
-		}
 		if(mdl::syntax::isSequence(line))
-		{
 			this->parsed_sequences[mdl::util::getTagName(line)] = mdl::util::findSequence(lines, i);
-		}
 	}
 }
 
@@ -255,7 +253,8 @@ namespace mdl
 		{
 			std::string r;
 			std::vector<std::string> sp = mdl::util::splitString(tag, ":");
-			if(sp.size() < 2) 
+			constexpr std::size_t minimum_split_quantity = 2;
+			if(sp.size() < minimum_split_quantity) 
 				return "0";
 			return sp.at(0);
 		}
@@ -277,9 +276,10 @@ namespace mdl
 		{
 			std::string r;
 			std::vector<std::string> sp = mdl::util::splitString(line, ":");
-			if(sp.size() < 2)
+			constexpr std::size_t minimum_split_quantity = 2;
+			if(sp.size() < minimum_split_quantity)
 				return "0";
-			for(unsigned int i = 1; i < sp.size(); i++)
+			for(std::size_t i = 1; i < sp.size(); i++)
 			{
 				sp.at(i).erase(0, 1);
 				r += sp.at(i);

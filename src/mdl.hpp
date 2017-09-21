@@ -4,8 +4,6 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <sstream>
 #include <map>
 
 class RawFile
@@ -20,7 +18,7 @@ public:
 	std::vector<std::string> getLines() const;
 	std::string getData() const;
 	void clear() const;
-	void write(std::string data, bool clear) const;// will append the end of the file (so data is the final data in the file)
+	void write(std::string data, bool clear) const;
 	void writeLine(std::string data, unsigned int line) const;
 private:
 	std::string path;
@@ -29,6 +27,7 @@ private:
 class MDLF
 {
 public:
+	MDLF(std::string file_path);
 	MDLF(RawFile rf);
 	MDLF(const MDLF& copy) = default;
 	MDLF(MDLF&& move) = default;

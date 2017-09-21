@@ -7,7 +7,7 @@ DLL, object file and lib file are in the /cpl/ directory. Use those to dynamical
 
 ### Prerequisites
 
-C++17 only. The binaries provided are compiled with MinGW-W64 x86_64 g++ v7.1.0-posix-seh-rt_v5-rev2, so if you're not using a toolchain similar to this, you may need to consider compiling it yourself. A batch file (qcpl.bat) is provided to do this for you. If you're on a unix system, don't worry compilation is trivial (Just interpret the batch file yourself).
+C++17 only. The binaries provided are compiled with MinGW-W64 x86_64 g++ v7.1.0-posix-seh-rt_v5-rev2, so if you're not using a toolchain similar to this, you may need to consider compiling it yourself. A batch file (cpl.bat) is provided to do this for you. If you're on a unix system, don't worry compilation is trivial (Just interpret the batch file yourself).
 
 ## Deployment
 
