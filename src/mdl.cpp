@@ -88,13 +88,13 @@ bool MDLF::existsSequence(const std::string& sequence_name) const
 	return false;
 }
 
-void MDLF::addTag(std::string tag_name, std::string data) const
+void MDLF::addTag(std::string tag_name, std::string data)
 {
 	raw_file.write(tag_name + ": " + data, false);
 	this->parsed_tags[tag_name] = data;
 }
 
-void MDLF::addSequence(std::string sequence_name, std::vector<std::string> data) const
+void MDLF::addSequence(std::string sequence_name, std::vector<std::string> data)
 {
 	raw_file.write(sequence_name + ": %[", false);
 	if(data.size() > 0)
@@ -108,7 +108,7 @@ void MDLF::addSequence(std::string sequence_name, std::vector<std::string> data)
 	this->parsed_sequences[sequence_name] = data;
 }
 
-void MDLF::deleteTag(std::string tag_name) const
+void MDLF::deleteTag(std::string tag_name)
 {
 	if(existsTag(tag_name))
 	{
@@ -126,7 +126,7 @@ void MDLF::deleteTag(std::string tag_name) const
 	}
 }
 
-void MDLF::deleteSequence(std::string sequence_name) const
+void MDLF::deleteSequence(std::string sequence_name)
 {
 	if(existsSequence(sequence_name))
 	{
@@ -147,13 +147,13 @@ void MDLF::deleteSequence(std::string sequence_name) const
 	}
 }
 
-void MDLF::editTag(std::string tag_name, std::string data) const
+void MDLF::editTag(std::string tag_name, std::string data)
 {
 	this->deleteTag(tag_name);
 	this->addTag(tag_name, data);
 }
 
-void MDLF::editSequence(std::string sequence_name, std::vector<std::string> data) const
+void MDLF::editSequence(std::string sequence_name, std::vector<std::string> data)
 {
 	this->deleteSequence(sequence_name);
 	this->addSequence(sequence_name, data);
@@ -185,7 +185,7 @@ const std::map<std::string, std::vector<std::string>>& MDLF::getParsedSequences(
 	return this->parsed_sequences;
 }
 
-void MDLF::update() const
+void MDLF::update()
 {
 	this->parsed_tags.clear();
 	this->parsed_sequences.clear();
