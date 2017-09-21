@@ -63,19 +63,12 @@ void RawFile::writeLine(std::string data, unsigned int line) const
 
 MDLF::MDLF(RawFile rf): rf(rf)
 {
-	parse();
+	this->update();
 }
 
 const RawFile& MDLF::getRawFile() const
 {
 	return this->rf;
-}
-
-void MDLF::update() const
-{
-	this->parsed_tags.clear();
-	this->parsed_sequences.clear();
-	parse();
 }
 
 bool MDLF::existsTag(const std::string& tag_name) const
@@ -139,7 +132,7 @@ void MDLF::deleteSequence(std::string sequence_name) const
 			std::string s = lines.at(i);
 			if(mdl::util::getTagName(s) == sequence_name)
 			{
-				unsigned int sequenceSize = mdl::util::getSequences(lines, i).size();
+				unsigned int sequenceSize = mdl::util::findSequence(lines, i).size();
 				for(unsigned int j = 0; j <= sequenceSize; j++)
 				{
 					rf.writeLine("", i + j);
@@ -187,49 +180,81 @@ const std::map<std::string, std::vector<std::string>>& MDLF::getParsedSequences(
 	return this->parsed_sequences;
 }
 
-void MDLF::parse() const
+void MDLF::update() const
 {
+	this->parsed_tags.clear();
+	this->parsed_sequences.clear();
 	std::vector<std::string> lines = rf.getLines();
-	auto isComment = [](std::string l) -> bool{return l.c_str()[0] == '#';};
-	auto isTag = [&](std::string s) -> bool{return s.find(": ") != std::string::npos && !mdl::util::isSequence(s);};
-	//getValue is necessary for tag but not for sequences. This is because the retrieval function for sequences is also used in the deletion functions, so therefore I used a private member function instead of a local lambda.
-	auto getValue = [&](std::string s) -> std::string{std::string r;std::vector<std::string> sp = mdl::util::splitString(s, ':');if(sp.size() < 2) return "0";for(unsigned int i = 1; i < sp.size(); i++){sp.at(i).erase(0, 1);r += sp.at(i);}return r;};
 	for(unsigned int i = 0; i < lines.size(); i++)
 	{
 		std::string line = lines.at(i);
-		if(isComment(line))
+		if(mdl::syntax::isComment(line))
 		{
 			continue;
 		}
-		if(isTag(line))
+		if(mdl::syntax::isTag(line))
 		{
-			this->parsed_tags[mdl::util::getTagName(line)] = getValue(line);
+			this->parsed_tags[mdl::util::getTagName(line)] = mdl::util::findTagValue(line);
 		}
-		if(mdl::util::isSequence(line))
+		if(mdl::syntax::isSequence(line))
 		{
-			this->parsed_sequences[mdl::util::getTagName(line)] = mdl::util::getSequences(lines, i);
+			this->parsed_sequences[mdl::util::getTagName(line)] = mdl::util::findSequence(lines, i);
 		}
 	}
 }
 
 namespace mdl
 {
+	namespace syntax
+	{
+		bool isComment(const std::string& line)
+		{
+			return line.c_str()[0] == '#';
+		}
+		
+		bool isTag(const std::string& line)
+		{
+			return line.find(": ") != std::string::npos && !mdl::syntax::isSequence(line);
+		}
+		
+		bool isSequence(const std::string& line)
+		{
+			return line.find(": ") != std::string::npos && mdl::util::endsWith(line, "%[");
+		}
+		
+		bool isEndOfSequence(const std::string& line)
+		{
+			return mdl::util::endsWith(line, "]%");
+		}
+	
+	}
+	
 	namespace util
 	{
-		std::vector<std::string> splitString(std::string string, char delimiter)
+		std::vector<std::string> splitString(const std::string& string, const std::string& delimiter)
 		{
-			std::istringstream ss(string);
-			std::string t;
-			std::vector<std::string> sp;
-			while(std::getline(ss, t, delimiter))
-				sp.push_back(t);
-			return sp;
+			std::vector<std::string> v;
+			// Start of an element.
+			std::size_t element_start = 0;
+			// We start searching from the end of the previous element, which
+			// initially is the start of the string.
+			std::size_t element_end = 0;
+			// Find the first non-delim, i.e. the start of an element, after the end of the previous element.
+			while((element_start = string.find_first_not_of(delimiter, element_end)) != std::string::npos)
+			{
+				// Find the first delem, i.e. the end of the element (or if this fails it is the end of the string).
+				element_end = string.find_first_of(delimiter, element_start);
+				// Add it.
+				v.emplace_back(string, element_start, element_end == std::string::npos ? std::string::npos : element_end - element_start);
+			}
+			// When there are no more non-spaces, we are done.
+			return v;
 		}
 		
 		std::string getTagName(std::string tag)
 		{
 			std::string r;
-			std::vector<std::string> sp = mdl::util::splitString(tag, ':');
+			std::vector<std::string> sp = mdl::util::splitString(tag, ":");
 			if(sp.size() < 2) 
 				return "0";
 			return sp.at(0);
@@ -248,21 +273,25 @@ namespace mdl
 			return string.compare(0, prefix.length(), prefix) == 0;
 		}
 		
-		bool isSequence(const std::string& s)
+		std::string findTagValue(std::string line)
 		{
-			return s.find(": ") != std::string::npos && mdl::util::endsWith(s, "%[");
+			std::string r;
+			std::vector<std::string> sp = mdl::util::splitString(line, ":");
+			if(sp.size() < 2)
+				return "0";
+			for(unsigned int i = 1; i < sp.size(); i++)
+			{
+				sp.at(i).erase(0, 1);
+				r += sp.at(i);
+			}
+			return r;
 		}
 		
-		bool isEndOfSequence(const std::string& s)
-		{
-			return mdl::util::endsWith(s, "]%");
-		}
-		
-		std::vector<std::string> getSequences(std::vector<std::string> lines, std::size_t index)
+		std::vector<std::string> findSequence(std::vector<std::string> lines, std::size_t index)
 		{
 			bool end = false;
 			std::vector<std::string> r;
-			if(!mdl::util::isSequence(lines.at(index)))
+			if(!mdl::syntax::isSequence(lines.at(index)))
 				return r;
 			while(++index < lines.size() && end == false)
 			{
@@ -270,7 +299,7 @@ namespace mdl
 				if(mdl::util::beginsWith(cur, "- "))
 				{
 					cur.erase(0, 2);
-					if(mdl::util::isEndOfSequence(cur))
+					if(mdl::syntax::isEndOfSequence(cur))
 					{
 						cur.erase(cur.length() - 2, 2);
 						end = true;

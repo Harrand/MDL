@@ -51,24 +51,26 @@ public:
 private:
 	RawFile rf;
 	mutable std::map<std::string, std::string> parsed_tags;
-	mutable std::map<std::string, std::vector<std::string>> parsed_sequences;
-	
-	void parse() const;
+	mutable std::map<std::string, std::vector<std::string>> parsed_sequences;	
 };
 
 namespace mdl
 {
+	namespace syntax
+	{
+		bool isComment(const std::string& line);
+		bool isTag(const std::string& line);
+		bool isSequence(const std::string& line);
+		bool isEndOfSequence(const std::string& line);
+	}
 	namespace util
 	{
-		std::vector<std::string> splitString(std::string string, char delimiter);
+		std::vector<std::string> splitString(const std::string& string, const std::string& delimiter);
 		std::string getTagName(std::string tag);
-		// hasEnding -> endsWith
 		bool endsWith(const std::string& string, const std::string& suffix);
-		// hasBeginning -> beginsWith
 		bool beginsWith(const std::string& string, const std::string& prefix);
-		bool isSequence(const std::string& s);
-		bool isEndOfSequence(const std::string& s);
-		std::vector<std::string> getSequences(std::vector<std::string> lines, std::size_t index);
+		std::string findTagValue(std::string line);
+		std::vector<std::string> findSequence(std::vector<std::string> lines, std::size_t index);
 	}
 }
 
