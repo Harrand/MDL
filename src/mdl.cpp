@@ -116,13 +116,11 @@ void MDLF::deleteTag(std::string tag_name) const
 {
 	if(existsTag(tag_name))
 	{
-		auto splitString = [](std::string s, char d) -> std::vector<std::string>{std::istringstream ss(s);std::string t;std::vector<std::string> sp;while(std::getline(ss, t, d))	sp.push_back(t);return sp;};
-		auto getTagName = [&splitString](std::string tag) -> std::string{std::string r;std::vector<std::string> sp = splitString(tag, ':');if(sp.size() < 2) return "0";return sp.at(0);};
 		std::vector<std::string> lines = rf.getLines();
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
-			if(getTagName(s) == tag_name)
+			if(mdl::util::getTagName(s) == tag_name)
 			{
 				rf.writeLine("", i);
 				i++;
@@ -139,9 +137,9 @@ void MDLF::deleteSequence(std::string sequence_name) const
 		for(unsigned int i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
-			if(getTagName(s) == sequence_name)
+			if(mdl::util::getTagName(s) == sequence_name)
 			{
-				unsigned int sequenceSize = getSequences(lines, i).size();
+				unsigned int sequenceSize = mdl::util::getSequences(lines, i).size();
 				for(unsigned int j = 0; j <= sequenceSize; j++)
 				{
 					rf.writeLine("", i + j);
@@ -189,82 +187,13 @@ const std::map<std::string, std::vector<std::string>>& MDLF::getParsedSequences(
 	return this->parsed_sequences;
 }
 
-std::vector<std::string> MDLF::splitString(std::string s, char d) const
-{
-	std::istringstream ss(s);
-	std::string t;
-	std::vector<std::string> sp;
-	while(std::getline(ss, t, d))
-		sp.push_back(t);
-	return sp;
-}
-
-std::string MDLF::getTagName(std::string tag) const
-{
-	std::string r;
-	std::vector<std::string> sp = splitString(tag, ':');
-	if(sp.size() < 2) 
-		return "0";
-	return sp.at(0);
-}
-
-bool MDLF::hasEnding(const std::string& s, const std::string& e) const
-{
-	if(s.length() >= e.length())
-	{
-		return (0 == s.compare (s.length() - e.length(), e.length(), e));
-	}
-	else
-	{
-		return false;
-	};
-}
-
-bool MDLF::hasBeginning(const std::string& s, const std::string& b) const
-{
-	return s.compare(0, b.length(), b) == 0;
-}
-
-bool MDLF::isSequence(const std::string& s) const
-{
-	return s.find(": ") != std::string::npos && hasEnding(s, "%[");
-}
-
-bool MDLF::isEndOfSequence(const std::string& s) const
-{
-	return hasEnding(s, "]%");
-}
-
-std::vector<std::string> MDLF::getSequences(std::vector<std::string> lines, unsigned int index) const
-{
-	bool end = false;
-	std::vector<std::string> r;
-	if(!isSequence(lines.at(index)))
-		return r;
-	while(++index < lines.size() && end == false)
-	{
-		std::string cur = lines.at(index);
-		if(hasBeginning(cur, "- "))
-		{
-			cur.erase(0, 2);
-			if(isEndOfSequence(cur))
-			{
-				cur.erase(cur.length() - 2, 2);
-				end = true;
-			}
-			r.push_back(cur);
-		}
-	}
-	return r;
-}
-
 void MDLF::parse() const
 {
 	std::vector<std::string> lines = rf.getLines();
 	auto isComment = [](std::string l) -> bool{return l.c_str()[0] == '#';};
-	auto isTag = [&](std::string s) -> bool{return s.find(": ") != std::string::npos && !isSequence(s);};
+	auto isTag = [&](std::string s) -> bool{return s.find(": ") != std::string::npos && !mdl::util::isSequence(s);};
 	//getValue is necessary for tag but not for sequences. This is because the retrieval function for sequences is also used in the deletion functions, so therefore I used a private member function instead of a local lambda.
-	auto getValue = [&](std::string s) -> std::string{std::string r;std::vector<std::string> sp = splitString(s, ':');if(sp.size() < 2) return "0";for(unsigned int i = 1; i < sp.size(); i++){sp.at(i).erase(0, 1);r += sp.at(i);}return r;};
+	auto getValue = [&](std::string s) -> std::string{std::string r;std::vector<std::string> sp = mdl::util::splitString(s, ':');if(sp.size() < 2) return "0";for(unsigned int i = 1; i < sp.size(); i++){sp.at(i).erase(0, 1);r += sp.at(i);}return r;};
 	for(unsigned int i = 0; i < lines.size(); i++)
 	{
 		std::string line = lines.at(i);
@@ -274,11 +203,82 @@ void MDLF::parse() const
 		}
 		if(isTag(line))
 		{
-			this->parsed_tags[getTagName(line)] = getValue(line);
+			this->parsed_tags[mdl::util::getTagName(line)] = getValue(line);
 		}
-		if(isSequence(line))
+		if(mdl::util::isSequence(line))
 		{
-			this->parsed_sequences[getTagName(line)] = getSequences(lines, i);
+			this->parsed_sequences[mdl::util::getTagName(line)] = mdl::util::getSequences(lines, i);
+		}
+	}
+}
+
+namespace mdl
+{
+	namespace util
+	{
+		std::vector<std::string> splitString(std::string string, char delimiter)
+		{
+			std::istringstream ss(string);
+			std::string t;
+			std::vector<std::string> sp;
+			while(std::getline(ss, t, delimiter))
+				sp.push_back(t);
+			return sp;
+		}
+		
+		std::string getTagName(std::string tag)
+		{
+			std::string r;
+			std::vector<std::string> sp = mdl::util::splitString(tag, ':');
+			if(sp.size() < 2) 
+				return "0";
+			return sp.at(0);
+		}
+		
+		bool endsWith(const std::string& string, const std::string& suffix)
+		{
+			if(string.length() >= suffix.length())
+				return (0 == string.compare(string.length() - suffix.length(), suffix.length(), suffix));
+			else
+				return false;
+		}
+		
+		bool beginsWith(const std::string& string, const std::string& prefix)
+		{
+			return string.compare(0, prefix.length(), prefix) == 0;
+		}
+		
+		bool isSequence(const std::string& s)
+		{
+			return s.find(": ") != std::string::npos && mdl::util::endsWith(s, "%[");
+		}
+		
+		bool isEndOfSequence(const std::string& s)
+		{
+			return mdl::util::endsWith(s, "]%");
+		}
+		
+		std::vector<std::string> getSequences(std::vector<std::string> lines, std::size_t index)
+		{
+			bool end = false;
+			std::vector<std::string> r;
+			if(!mdl::util::isSequence(lines.at(index)))
+				return r;
+			while(++index < lines.size() && end == false)
+			{
+				std::string cur = lines.at(index);
+				if(mdl::util::beginsWith(cur, "- "))
+				{
+					cur.erase(0, 2);
+					if(mdl::util::isEndOfSequence(cur))
+					{
+						cur.erase(cur.length() - 2, 2);
+						end = true;
+					}
+					r.push_back(cur);
+				}
+			}
+			return r;
 		}
 	}
 }

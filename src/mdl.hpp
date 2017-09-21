@@ -1,6 +1,7 @@
 #ifndef MDL_HPP
 #define MDL_HPP
 
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -52,15 +53,23 @@ private:
 	mutable std::map<std::string, std::string> parsed_tags;
 	mutable std::map<std::string, std::vector<std::string>> parsed_sequences;
 	
-	std::vector<std::string> splitString(std::string s, char d) const;
-	std::string getTagName(std::string tag) const;
-	bool hasEnding(const std::string& s, const std::string& e) const;
-	bool hasBeginning(const std::string& s, const std::string& b) const;
-	bool isSequence(const std::string& s) const;
-	bool isEndOfSequence(const std::string& s) const;
-	std::vector<std::string> getSequences(std::vector<std::string> lines, unsigned int index) const;
-	
 	void parse() const;
 };
+
+namespace mdl
+{
+	namespace util
+	{
+		std::vector<std::string> splitString(std::string string, char delimiter);
+		std::string getTagName(std::string tag);
+		// hasEnding -> endsWith
+		bool endsWith(const std::string& string, const std::string& suffix);
+		// hasBeginning -> beginsWith
+		bool beginsWith(const std::string& string, const std::string& prefix);
+		bool isSequence(const std::string& s);
+		bool isEndOfSequence(const std::string& s);
+		std::vector<std::string> getSequences(std::vector<std::string> lines, std::size_t index);
+	}
+}
 
 #endif
