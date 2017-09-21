@@ -3,15 +3,15 @@ MDL stands for Minimalist Data Language. This framework is used to interpret MDL
 
 ## Getting Started
 
-DLL, object file and lib file are in the /cpl/ directory. Use those to dynamically link against MDL. Alternatively, the source is located in /src/ so you may simply add it to your project if you wish.
+The source is located in /src/ so you may simply add it to your project if you wish. Alternatively, the compilation script cpl.bat will generate a DLL and an implib to use if you wish to link dynamically against MDL.
 
 ### Prerequisites
 
-C++17 only. The binaries provided are compiled with MinGW-W64 x86_64 g++ v7.1.0-posix-seh-rt_v5-rev2, so if you're not using a toolchain similar to this, you may need to consider compiling it yourself. A batch file (cpl.bat) is provided to do this for you. If you're on a unix system, don't worry compilation is trivial (Just interpret the batch file yourself).
+C++17 only. The compilation script was fashioned for the toolchain MinGW-W64 x86_64 g++ v7.1.0-posix-seh-rt_v5-rev2, so if you're not using a toolchain similar to this, you may not be able to use the compilation script.
 
 ## Deployment
 
-If you wish to use this framework, go ahead.
+If you wish to use this framework, go ahead. Unlike other repositories, you're free to use this all the while you adhere to the license used.
 
 ## Contributing
 
