@@ -116,7 +116,7 @@ void MDLF::deleteTag(std::string tag_name)
 		for(std::size_t i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
-			if(mdl::util::getTagName(s) == tag_name)
+			if(mdl::util::findTagName(s) == tag_name)
 			{
 				raw_file.writeLine("", i);
 				i++;
@@ -134,9 +134,9 @@ void MDLF::deleteSequence(std::string sequence_name)
 		for(std::size_t i = 0; i < lines.size(); i++)
 		{
 			std::string s = lines.at(i);
-			if(mdl::util::getTagName(s) == sequence_name)
+			if(mdl::util::findTagName(s) == sequence_name)
 			{
-				std::size_t sequence_size = mdl::util::findSequence(lines, i).size();
+				std::size_t sequence_size = mdl::util::findSequenceValues(lines, i).size();
 				for(std::size_t j = 0; j <= sequence_size; j++)
 				{
 					raw_file.writeLine("", i + j);
@@ -196,9 +196,9 @@ void MDLF::update()
 		if(mdl::syntax::isComment(line))
 			continue;
 		if(mdl::syntax::isTag(line))
-			this->parsed_tags[mdl::util::getTagName(line)] = mdl::util::findTagValue(line);
+			this->parsed_tags[mdl::util::findTagName(line)] = mdl::util::findTagValue(line);
 		if(mdl::syntax::isSequence(line))
-			this->parsed_sequences[mdl::util::getTagName(line)] = mdl::util::findSequence(lines, i);
+			this->parsed_sequences[mdl::util::findSequenceName(line)] = mdl::util::findSequenceValues(lines, i);
 	}
 }
 
@@ -206,6 +206,11 @@ namespace mdl
 {
 	namespace syntax
 	{
+		bool isValid(const MDLF& file)
+		{
+			return file.getRawFile().getPath() != mdl::default_string;
+		}
+		
 		bool isComment(const std::string& line)
 		{
 			return line.c_str()[0] == '#';
@@ -250,16 +255,6 @@ namespace mdl
 			return v;
 		}
 		
-		std::string getTagName(std::string tag)
-		{
-			std::string r;
-			std::vector<std::string> sp = mdl::util::splitString(tag, ":");
-			constexpr std::size_t minimum_split_quantity = 2;
-			if(sp.size() < minimum_split_quantity) 
-				return mdl::default_string;
-			return sp.at(0);
-		}
-		
 		bool endsWith(const std::string& string, const std::string& suffix)
 		{
 			if(string.length() >= suffix.length())
@@ -273,7 +268,17 @@ namespace mdl
 			return string.compare(0, prefix.length(), prefix) == 0;
 		}
 		
-		std::string findTagValue(std::string line)
+		std::string findTagName(const std::string& line)
+		{
+			std::string r;
+			std::vector<std::string> sp = mdl::util::splitString(line, ":");
+			constexpr std::size_t minimum_split_quantity = 2;
+			if(sp.size() < minimum_split_quantity) 
+				return mdl::default_string;
+			return sp.at(0);
+		}
+		
+		std::string findTagValue(const std::string& line)
 		{
 			std::string r;
 			std::vector<std::string> sp = mdl::util::splitString(line, ":");
@@ -288,13 +293,19 @@ namespace mdl
 			return r;
 		}
 		
-		std::vector<std::string> findSequence(std::vector<std::string> lines, std::size_t index)
+		std::string findSequenceName(const std::string& line)
+		{
+			// Identical to finding tag name
+			return findTagName(line);
+		}
+		
+		std::vector<std::string> findSequenceValues(const std::vector<std::string>& lines, std::size_t index)
 		{
 			bool end = false;
 			std::vector<std::string> r;
 			if(!mdl::syntax::isSequence(lines.at(index)))
 				return r;
-			while(++index < lines.size() && end == false)
+			while(++index < lines.size() && !end)
 			{
 				std::string cur = lines.at(index);
 				if(mdl::util::beginsWith(cur, "- "))
