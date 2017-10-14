@@ -4,9 +4,9 @@
 
 RawFile::RawFile(std::string path): path(std::move(path)){}
 
-const std::string& RawFile::get_path() const
+std::string_view RawFile::get_path() const
 {
-	return this->path;
+	return {this->path.c_str(), this->path.length()};
 }
 
 std::vector<std::string> RawFile::get_lines() const
