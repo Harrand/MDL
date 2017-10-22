@@ -204,6 +204,16 @@ void MDLF::update()
 
 namespace mdl
 {
+	std::vector<std::string> read_lines(const std::string& filename)
+	{
+		return RawFile(filename).get_lines();
+	}
+	
+	std::string read(const std::string& filename)
+	{
+		return RawFile(filename).get_data();
+	}
+	
 	namespace syntax
 	{
 		bool is_valid(const MDLF& file)
