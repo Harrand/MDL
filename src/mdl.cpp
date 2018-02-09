@@ -1,78 +1,18 @@
 #include "mdl.hpp"
-#include <fstream>
-#include <sstream>
 
-RawFile::RawFile(std::string path): path(std::move(path)){}
+MDLFile::MDLFile(std::string file_path): MDLFile(File(file_path)){}
 
-std::string_view RawFile::get_path() const
-{
-	return {this->path.c_str(), this->path.length()};
-}
-
-std::vector<std::string> RawFile::get_lines() const
-{
-	std::ifstream file(this->path.c_str());
-	std::string line;
-	std::vector<std::string> lines;
-	while (std::getline(file, line))
-	{
-		lines.push_back(line);
-	}
-	return lines;
-}
-
-std::string RawFile::get_data() const
-{
-	std::stringstream sstr;
-    sstr << std::ifstream(path.c_str()).rdbuf();
-    return sstr.str();
-}
-
-void RawFile::clear() const
-{
-	std::ofstream out;
-	out.open((this->path).c_str(), std::ofstream::out | std::ofstream::trunc);
-}
-
-void RawFile::write(std::string data, bool clear) const
-{
-	std::ofstream out;
-	if(clear)
-		out.open((this->path).c_str(), std::ofstream::out | std::ofstream::trunc);
-	else
-		out.open((this->path).c_str(), std::ofstream::out | std::ofstream::app);
-	if(data != "")
-		out << (data + "\n").c_str();
-	out.close();
-}
-
-void RawFile::write_line(std::string data, std::size_t line) const
-{
-	std::vector<std::string> lines = this->get_lines();
-	if(line >= lines.size())
-	{
-		this->write(data, false);
-		return;
-	}
-	lines.at(line) = data;
-	this->clear();
-	for(std::size_t i = 0; i < lines.size(); i++)
-		this->write(lines.at(i), false);
-}
-
-MDLF::MDLF(std::string file_path): MDLF(RawFile(file_path)){}
-
-MDLF::MDLF(RawFile raw_file): raw_file(raw_file)
+MDLFile::MDLFile(File raw_file): raw_file(raw_file)
 {
 	this->update();
 }
 
-const RawFile& MDLF::get_raw_file() const
+const File& MDLFile::get_raw_file() const
 {
 	return this->raw_file;
 }
 
-bool MDLF::exists_tag(const std::string& tag_name) const
+bool MDLFile::exists_tag(const std::string& tag_name) const
 {
 	for(auto iter : get_parsed_tags())
 		if(iter.first == tag_name)
@@ -80,7 +20,7 @@ bool MDLF::exists_tag(const std::string& tag_name) const
 	return false;
 }
 
-bool MDLF::exists_sequence(const std::string& sequence_name) const
+bool MDLFile::exists_sequence(const std::string& sequence_name) const
 {
 	for(auto iter : get_parsed_sequences())
 		if(iter.first == sequence_name)
@@ -88,13 +28,13 @@ bool MDLF::exists_sequence(const std::string& sequence_name) const
 	return false;
 }
 
-void MDLF::add_tag(std::string tag_name, std::string data)
+void MDLFile::add_tag(std::string tag_name, std::string data)
 {
 	raw_file.write(tag_name + ": " + data, false);
 	this->parsed_tags[tag_name] = data;
 }
 
-void MDLF::add_sequence(std::string sequence_name, std::vector<std::string> data)
+void MDLFile::add_sequence(std::string sequence_name, std::vector<std::string> data)
 {
 	raw_file.write(sequence_name + ": %[", false);
 	if(data.size() > 0)
@@ -108,7 +48,7 @@ void MDLF::add_sequence(std::string sequence_name, std::vector<std::string> data
 	this->parsed_sequences[sequence_name] = data;
 }
 
-void MDLF::delete_tag(std::string tag_name)
+void MDLFile::delete_tag(std::string tag_name)
 {
 	if(exists_tag(tag_name))
 	{
@@ -126,7 +66,7 @@ void MDLF::delete_tag(std::string tag_name)
 	}
 }
 
-void MDLF::delete_sequence(std::string sequence_name)
+void MDLFile::delete_sequence(std::string sequence_name)
 {
 	if(exists_sequence(sequence_name))
 	{
@@ -147,19 +87,19 @@ void MDLF::delete_sequence(std::string sequence_name)
 	}
 }
 
-void MDLF::edit_tag(std::string tag_name, std::string data)
+void MDLFile::edit_tag(std::string tag_name, std::string data)
 {
 	this->delete_tag(tag_name);
 	this->add_tag(tag_name, data);
 }
 
-void MDLF::edit_sequence(std::string sequence_name, std::vector<std::string> data)
+void MDLFile::edit_sequence(std::string sequence_name, std::vector<std::string> data)
 {
 	this->delete_sequence(sequence_name);
 	this->add_sequence(sequence_name, data);
 }
 
-std::string MDLF::get_tag(const std::string& tag_name) const
+std::string MDLFile::get_tag(const std::string& tag_name) const
 {
 	for(auto iter : get_parsed_tags())
 		if(iter.first == tag_name)
@@ -167,7 +107,7 @@ std::string MDLF::get_tag(const std::string& tag_name) const
 	return mdl::default_string;
 }
 
-std::vector<std::string> MDLF::get_sequence(const std::string& sequence_name) const
+std::vector<std::string> MDLFile::get_sequence(const std::string& sequence_name) const
 {
 	for(auto iter : get_parsed_sequences())
 		if(iter.first == sequence_name)
@@ -175,17 +115,17 @@ std::vector<std::string> MDLF::get_sequence(const std::string& sequence_name) co
 	return std::vector<std::string>();
 }
 
-const std::map<std::string, std::string>& MDLF::get_parsed_tags() const
+const std::map<std::string, std::string>& MDLFile::get_parsed_tags() const
 {
 	return this->parsed_tags;
 }
 
-const std::map<std::string, std::vector<std::string>>& MDLF::get_parsed_sequences() const
+const std::map<std::string, std::vector<std::string>>& MDLFile::get_parsed_sequences() const
 {
 	return this->parsed_sequences;
 }
 
-void MDLF::update()
+void MDLFile::update()
 {
 	this->parsed_tags.clear();
 	this->parsed_sequences.clear();
@@ -206,17 +146,17 @@ namespace mdl
 {
 	std::vector<std::string> read_lines(const std::string& filename)
 	{
-		return RawFile(filename).get_lines();
+		return File(filename).get_lines();
 	}
 	
 	std::string read(const std::string& filename)
 	{
-		return RawFile(filename).get_data();
+		return File(filename).get_data();
 	}
 	
 	namespace syntax
 	{
-		bool is_valid(const MDLF& file)
+		bool is_valid(const MDLFile& file)
 		{
 			return file.get_raw_file().get_path() != mdl::default_string;
 		}
