@@ -4,6 +4,8 @@
 
 File::File(std::string path): path(std::move(path)){}
 
+File::File(): path(""){}
+
 std::string_view File::get_path() const
 {
 	return {this->path.c_str(), this->path.length()};

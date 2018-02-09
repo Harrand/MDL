@@ -13,7 +13,8 @@ namespace mdl
 class File
 {
 public:
-	File(std::string path = mdl::default_string);
+	explicit File(std::string path);
+	File();
 	File(const File& copy) = default;
 	File(File&& move) = default;
 	~File() = default;

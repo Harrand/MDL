@@ -1,13 +1,13 @@
-#ifndef MDL_HPP
-#define MDL_HPP
+#ifndef MDL_FILE_HPP
+#define MDL_FILE_HPP
 #include "file.hpp"
 #include <map>
 
 class MDLFile
 {
 public:
-	MDLFile(std::string file_path = mdl::default_string);
-	MDLFile(File raw_file);
+	explicit MDLFile(std::string file_path = mdl::default_string);
+	explicit MDLFile(File raw_file = File());
 	MDLFile(const MDLFile& copy) = default;
 	MDLFile(MDLFile&& move) = default;
 	~MDLFile() = default;

@@ -1,4 +1,4 @@
-#include "mdl.hpp"
+#include "mdl_file.hpp"
 
 MDLFile::MDLFile(std::string file_path): MDLFile(File(file_path)){}
 
