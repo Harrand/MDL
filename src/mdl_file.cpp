@@ -1,8 +1,8 @@
 #include "mdl_file.hpp"
 
-MDLFile::MDLFile(std::string file_path): MDLFile(File(file_path)){}
+MDLFile::MDLFile(std::string file_path): MDLFile(File(std::move(file_path))){}
 
-MDLFile::MDLFile(File raw_file): raw_file(raw_file)
+MDLFile::MDLFile(File raw_file): raw_file(std::move(raw_file))
 {
 	this->update();
 }
@@ -37,7 +37,7 @@ void MDLFile::add_tag(std::string tag_name, std::string data)
 void MDLFile::add_sequence(std::string sequence_name, std::vector<std::string> data)
 {
 	raw_file.write(sequence_name + ": %[", false);
-	if(data.size() > 0)
+	if(!data.empty())
 		for(std::size_t i = 0; i < data.size(); i++)
 		{
 			std::string suffix = (i == data.size() - 1) ? "]%" : "";
@@ -90,13 +90,13 @@ void MDLFile::delete_sequence(std::string sequence_name)
 void MDLFile::edit_tag(std::string tag_name, std::string data)
 {
 	this->delete_tag(tag_name);
-	this->add_tag(tag_name, data);
+	this->add_tag(tag_name, std::move(data));
 }
 
 void MDLFile::edit_sequence(std::string sequence_name, std::vector<std::string> data)
 {
 	this->delete_sequence(sequence_name);
-	this->add_sequence(sequence_name, data);
+	this->add_sequence(sequence_name, std::move(data));
 }
 
 std::string MDLFile::get_tag(const std::string& tag_name) const

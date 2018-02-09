@@ -6,7 +6,7 @@
 class MDLFile
 {
 public:
-	explicit MDLFile(std::string file_path = mdl::default_string);
+	explicit MDLFile(std::string file_path);
 	explicit MDLFile(File raw_file = File());
 	MDLFile(const MDLFile& copy) = default;
 	MDLFile(MDLFile&& move) = default;
