@@ -1,6 +1,7 @@
 #include "mdl_file.hpp"
 
-MDLFile::MDLFile(std::string file_path): File(std::move(file_path)){}
+MDLFile::MDLFile(std::string file_path): File(file_path)
+{this->update();}
 
 bool MDLFile::exists_tag(const std::string& tag_name) const
 {
@@ -85,12 +86,16 @@ void MDLFile::edit_sequence(std::string sequence_name, std::vector<std::string> 
 
 std::string MDLFile::get_tag(const std::string& tag_name) const
 {
-	return this->get_parsed_tags().at(tag_name);
+    if(this->exists_tag(tag_name))
+	    return this->get_parsed_tags().at(tag_name);
+    return mdl::default_string;
 }
 
 std::vector<std::string> MDLFile::get_sequence(const std::string& sequence_name) const
 {
-    return this->get_parsed_sequences().at(sequence_name);
+    if(this->exists_sequence(sequence_name))
+        return this->get_parsed_sequences().at(sequence_name);
+    return {mdl::default_string};
 }
 
 const std::map<std::string, std::string>& MDLFile::get_parsed_tags() const

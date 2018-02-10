@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-File::File(std::string path): path(std::move(path)){}
+File::File(std::string path): path(path){}
 
 std::string_view File::get_path() const
 {
