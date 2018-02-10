@@ -1,6 +1,6 @@
 #include "mdl_file.hpp"
 
-MDLFile::MDLFile(std::string file_path): File(file_path)
+MDLFile::MDLFile(std::string file_path): File(std::move(file_path))
 {this->update();}
 
 bool MDLFile::exists_tag(const std::string& tag_name) const
