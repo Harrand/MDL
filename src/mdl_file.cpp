@@ -95,7 +95,7 @@ std::vector<std::string> MDLFile::get_sequence(const std::string& sequence_name)
 {
     if(this->exists_sequence(sequence_name))
         return this->get_parsed_sequences().at(sequence_name);
-    return {mdl::default_string};
+    return {};
 }
 
 const std::map<std::string, std::string>& MDLFile::get_parsed_tags() const
