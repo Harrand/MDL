@@ -4,9 +4,9 @@
 
 File::File(std::string path): path(std::move(path)){}
 
-std::string_view File::get_path() const
+std::string File::get_path() const
 {
-	return {this->path.c_str(), this->path.length()};
+    return this->path;
 }
 
 bool File::exists() const
